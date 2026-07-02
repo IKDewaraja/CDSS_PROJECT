@@ -6,42 +6,60 @@ export default function DoctorDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('trends'); // 'trends', 'thresholds', 'audit'
   
   // 2. Selected Patient State
-  const [selectedPatientId, setSelectedPatientId] = useState('PT-091');
+  const [selectedPatientId, setSelectedPatientId] = useState(''); // Starts empty until loaded from DB
   
-  // 3. Asynchronous Database Chart State
+  // 3. Asynchronous Database States (Unified with Caregiver)
+  const [doctorPatientRegistry, setDoctorPatientRegistry] = useState([]); // Fetched directly from MySQL
   const [activeChartData, setActiveChartData] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPatients, setIsLoadingPatients] = useState(false);
+  const [isLoadingChart, setIsLoadingChart] = useState(false);
 
   // 4. Dynamic Threshold State Configurations (Machine Learning Feature Boundaries)
   const [bsAlertLimit, setBsAlertLimit] = useState(140);
   const [spo2AlertLimit, setSpo2AlertLimit] = useState(94);
   const [hrvAlertLimit, setHrvAlertLimit] = useState(45);
 
-  // Static Patient Registry Master Array
-  const doctorPatientRegistry = [
-    { id: 'PT-091', name: 'Mrs. Anula Perera', age: 74, condition: 'History of Hypertension' },
-    { id: 'PT-142', name: 'Mr. K. Sivasubramaniam', age: 81, condition: 'Type II Diabetes Management' },
-    { id: 'PT-033', name: 'Mr. Gunapala Silva', age: 68, condition: 'Post-Stroke Rehabilitation' }
-  ];
-
   // Static Security Log Array (Immutable System Compliance Audit Trail)
   const systemAuditLogs = [
     { id: 'TX-9021', timestamp: '2026-07-02 10:14:22', operator: 'caregiver_amal', action: 'Submitted screening metrics payload', patientId: 'PT-091', result: 'Class 2: Definite Fall Event Detected' },
     { id: 'TX-9018', timestamp: '2026-07-02 08:30:11', operator: 'caregiver_amal', action: 'Submitted screening metrics payload', patientId: 'PT-142', result: 'Class 1: Imminent Stumble Risk logged' },
-    { id: 'TX-8975', timestamp: '2026-07-01 16:45:00', operator: 'nurse_priyanthi', action: 'Created new profile instantiation', patientId: 'PT-033', result: 'Success - Database row synchronized' },
-    { id: 'TX-8960', timestamp: '2026-07-01 11:22:04', operator: 'dr_perera', action: 'Executed health dossier batch PDF export', patientId: 'PT-091', result: 'System printed data ledger stream' },
-    { id: 'TX-8912', timestamp: '2026-06-30 09:05:13', operator: 'system_daemon', action: 'Automated database clean execution', patientId: 'ALL', result: 'Zero corruption entries detected' }
+    { id: 'TX-8975', timestamp: '2026-07-01 16:45:00', operator: 'nurse_priyanthi', action: 'Created new profile instantiation', patientId: 'PT-033', result: 'Success - Database row synchronized' }
   ];
 
-  // React Effect Hook to query the Live Spring Boot REST Endpoint
+  // HOOK 1: Fetch the master patient list from MySQL database right when Doctor dashboard mounts
   useEffect(() => {
+    const fetchMasterPatientRegistry = async () => {
+      setIsLoadingPatients(true);
+      try {
+        const response = await fetch('http://localhost:8080/api/patients/list');
+        if (!response.ok) throw new Error('Failed to fetch master patient list.');
+        const data = await response.json();
+        
+        setDoctorPatientRegistry(data);
+        
+        // Automatically select the first patient from the database if records exist
+        if (data.length > 0) {
+          setSelectedPatientId(data[0].patientId);
+        }
+      } catch (error) {
+        console.error('Doctor Registry Sync Error:', error);
+      } finally {
+        setIsLoadingPatients(false);
+      }
+    };
+
+    fetchMasterPatientRegistry();
+  }, []);
+
+  // HOOK 2: Fetch specific historical data when selectedPatientId or activeTab changes
+  useEffect(() => {
+    if (!selectedPatientId) return;
+
     const fetchPatientHistoryFromDatabase = async () => {
-      setIsLoading(true);
+      setIsLoadingChart(true);
       try {
         const response = await fetch(`http://localhost:8080/api/screening/history/${selectedPatientId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP Error Status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
         const databaseRows = await response.json();
         
         // Format the database timestamp and model fields to match keys expected by Recharts
@@ -56,7 +74,7 @@ export default function DoctorDashboard({ user, onLogout }) {
       } catch (error) {
         console.error('Failed to communicate with API service:', error);
       } finally {
-        setIsLoading(false);
+        setIsLoadingChart(false);
       }
     };
 
@@ -65,7 +83,8 @@ export default function DoctorDashboard({ user, onLogout }) {
     }
   }, [selectedPatientId, activeTab]);
 
-  const activePatient = doctorPatientRegistry.find(p => p.id === selectedPatientId);
+  // Find active patient details from our live state registry array
+  const activePatient = doctorPatientRegistry.find(p => p.patientId === selectedPatientId);
 
   const handleSaveThresholds = (e) => {
     e.preventDefault();
@@ -117,39 +136,50 @@ export default function DoctorDashboard({ user, onLogout }) {
                 <h2 style={{ margin: '0 0 5px 0', color: '#1a202c' }}>Clinical Analytics Hub</h2>
                 <p style={{ margin: 0, color: '#718096', fontSize: '14px' }}>Monitor multi-parameter feature classifications to evaluate geriatric stability indexes.</p>
               </div>
-              <button onClick={() => alert(`Compiling dataset profile for ${activePatient.name}. PDF Export successful.`)} style={{ padding: '10px 18px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+              <button onClick={() => alert(`Compiling dataset profile. PDF Export successful.`)} style={{ padding: '10px 18px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
                 🖨️ Export Medical PDF Report
               </button>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '30px' }}>
-              {/* Patient List Selector Column */}
+              {/* Live Patient List Selector Column */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <h4 style={{ margin: '0 0 5px 0', color: '#4a5568', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Select Active Patient</h4>
-                {doctorPatientRegistry.map((patient) => {
-                  const isSelected = patient.id === selectedPatientId;
-                  return (
-                    <div key={patient.id} onClick={() => setSelectedPatientId(patient.id)} style={{ padding: '15px', background: isSelected ? '#ebf8ff' : '#fff', border: isSelected ? '2px solid #3182ce' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>
-                      <div style={{ fontWeight: 'bold', color: '#2d3748', fontSize: '15px' }}>{patient.name}</div>
-                      <div style={{ fontSize: '12px', color: '#a0aec0', marginTop: '4px' }}>{patient.id} | Age: {patient.age}</div>
-                    </div>
-                  );
-                })}
+                
+                {isLoadingPatients ? (
+                  <div style={{ color: '#718096', fontSize: '14px' }}>Loading registry...</div>
+                ) : doctorPatientRegistry.length === 0 ? (
+                  <div style={{ color: '#a0aec0', fontSize: '14px', fontStyle: 'italic', border: '1px dashed #cbd5e0', padding: '10px', borderRadius: '6px' }}>
+                    No patients registered in database.
+                  </div>
+                ) : (
+                  doctorPatientRegistry.map((patient) => {
+                    const isSelected = patient.patientId === selectedPatientId;
+                    return (
+                      <div key={patient.patientId} onClick={() => setSelectedPatientId(patient.patientId)} style={{ padding: '15px', background: isSelected ? '#ebf8ff' : '#fff', border: isSelected ? '2px solid #3182ce' : '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer' }}>
+                        <div style={{ fontWeight: 'bold', color: '#2d3748', fontSize: '15px' }}>{patient.name}</div>
+                        <div style={{ fontSize: '12px', color: '#a0aec0', marginTop: '4px' }}>{patient.patientId} | Age: {patient.age}</div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
 
               {/* Chart Visualization Box */}
               <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '25px', minHeight: '430px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
-                  <h3 style={{ margin: '0 0 5px 0', color: '#2d3748' }}>Longitudinal Vectors: {activePatient.name}</h3>
-                  <span style={{ fontSize: '13px', color: '#718096' }}>Data Stream Source: Live Relational Database Records (`cStick.csv` targets)</span>
+                  <h3 style={{ margin: '0 0 5px 0', color: '#2d3748' }}>
+                    Longitudinal Vectors: {activePatient ? activePatient.name : 'Awaiting Selection'}
+                  </h3>
+                  <span style={{ fontSize: '13px', color: '#718096' }}>Data Stream Source: Live Relational Database Records</span>
                 </div>
 
-                {isLoading ? (
+                {isLoadingChart ? (
                   <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#718096', fontSize: '16px' }}>
                     🔄 Querying server connection pool, hydrating telemetry tracks...
                   </div>
                 ) : activeChartData.length === 0 ? (
-                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#a0aec0', border: '2px dashed #edf2f7', margin: '20px 0', borderRadius: '8px' }}>
+                  <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#a0aec0', border: '2px dashed #edf2f7', margin: '20px 0', borderRadius: '8px', padding: '20px', textAlign: 'center' }}>
                     No Screening Logs Exist in Database for this Patient. Submit entries via Caregiver View.
                   </div>
                 ) : (

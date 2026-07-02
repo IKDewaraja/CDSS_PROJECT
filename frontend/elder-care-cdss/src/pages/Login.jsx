@@ -2,16 +2,35 @@ import React, { useState } from 'react';
 
 export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
-  const [role, setRole] = useState('Caregiver'); // Default role dropdown selection
+  const [password, setPassword] = useState(''); // Added password tracking field
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!username.trim()) {
-      alert('Please enter an employee username');
+    if (!username.trim() || !password.trim()) {
+      alert('Please populate both employee credential inputs.');
       return;
     }
-    // Simulate successful login authentication by returning user details
-    onLoginSuccess({ username, role });
+
+    setIsAuthenticating(true);
+    try {
+      const response = await fetch('http://localhost:8080/api/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!response.ok) {
+        throw new Error('Authentication rejected: Invalid username or passcode matching keys.');
+      }
+
+      const verifiedUserRow = await response.json();
+      onLoginSuccess(verifiedUserRow); // Passes user object with its real DB role to App.jsx
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setIsAuthenticating(false);
+    }
   };
 
   return (
@@ -22,18 +41,17 @@ export default function Login({ onLoginSuccess }) {
         
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 'bold', color: '#4a5568' }}>Employee Username</label>
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. nurse_kamal or dr_perera" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e0', boxSizing: 'border-box' }} />
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="e.g. admin_root or nurse_amal" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e0', boxSizing: 'border-box' }} />
         </div>
 
         <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 'bold', color: '#4a5568' }}>Assigned System Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e0', boxSizing: 'border-box', backgroundColor: '#fff' }}>
-            <option value="Caregiver">Caregiver (Ward Operations)</option>
-            <option value="Doctor">Medical Professional (Clinical Analysis)</option>
-          </select>
+          <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 'bold', color: '#4a5568' }}>Security Password Key</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e0', boxSizing: 'border-box' }} />
         </div>
 
-        <button type="submit" style={{ width: '100%', padding: '12px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px' }}>Authenticate Session</button>
+        <button type="submit" disabled={isAuthenticating} style={{ width: '100%', padding: '12px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '16px' }}>
+          {isAuthenticating ? 'Validating Session...' : 'Authenticate Session'}
+        </button>
       </form>
     </div>
   );

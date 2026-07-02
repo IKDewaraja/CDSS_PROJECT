@@ -3,9 +3,9 @@ import Login from './pages/Login';
 import MainContainer from './pages/MainContainer';
 import CaregiverDashboard from './pages/CaregiverDashboard';
 import DoctorDashboard from './pages/DoctorDashboard';
+import AdminDashboard from './pages/AdminDashboard'; // Import Admin Panel
 
 export default function App() {
-  // Global Session State Variable Tracking Authenticated User Details
   const [currentUser, setCurrentUser] = useState(null);
 
   const handleLoginSuccess = (userData) => {
@@ -16,12 +16,16 @@ export default function App() {
     setCurrentUser(null);
   };
 
-  // Guard Boundary Check: If session state is empty, freeze workspace and isolate user at Login Gateway
   if (!currentUser) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // Session Validated: Render the Master UI Container Shell and inject the corresponding role-view inside
+  // 1. If user role maps to Admin, circumvent standard UI shells and hand over completely to Admin Suite
+  if (currentUser.role === 'Admin') {
+    return <AdminDashboard user={currentUser} onLogout={handleLogout} />;
+  }
+
+  // 2. Otherwise, pass down to standard dynamic shell layout structures (Doctor/Caregiver)
   return (
     <MainContainer user={currentUser} onLogout={handleLogout}>
       {currentUser.role === 'Caregiver' ? (
