@@ -3,83 +3,110 @@ import ScreeningForm from './ScreeningForm';
 import RegisterPatient from './RegisterPatient';
 
 export default function CaregiverDashboard({ user }) {
+  // 1. FIXED STATE INITIALIZATION: Default strictly to 'list' view to show directory first
   const [activeView, setActiveView] = useState('list'); // 'list', 'screening', 'register'
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [patientRegistry, setPatientRegistry] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Function to pull profiles out of your live MySQL Database
+  // Function to pull registered patient profiles out of your live MySQL Database
   const fetchActivePatients = async () => {
     setIsLoading(true);
     try {
       const response = await fetch('http://localhost:8080/api/patients/list');
-      if (!response.ok) throw new Error('Data fetch failed.');
+      if (!response.ok) throw new Error('Data fetch transaction failed.');
       const data = await response.json();
       setPatientRegistry(data);
     } catch (error) {
-      console.error('Error fetching patients:', error);
+      console.error('Error fetching patients registry ledger:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Run database synchronization hook when component initializes
   useEffect(() => {
     fetchActivePatients();
   }, []);
 
   const triggerScreeningWorkflow = (patient) => {
     setSelectedPatient(patient);
-    setActiveView('screening');
+    setActiveView('screening'); // Shifts into input entry panel for chosen elder
   };
 
   const handleRegistrationSuccess = () => {
-    fetchActivePatients(); // Reload list with the new addition
-    setActiveView('list');
+    fetchActivePatients(); // Reload list with the fresh database row additions
+    setActiveView('list');  // Return securely back to the main grid view
   };
 
+  
+// Route Routing Check 1: Render the dynamic vitals input entry panel
   if (activeView === 'screening') {
-    return <ScreeningForm patient={selectedPatient} onBack={() => setActiveView('list')} />;
+    return (
+      <ScreeningForm 
+        patient={selectedPatient} 
+        user={user} // ◄ MAKE SURE THIS LINE MATCHES EXACTLY TO PROPAGATE USER DOWN
+        onBack={() => setActiveView('list')} 
+      />
+    );
   }
 
+  // Route Routing Check 2: Render the new admission data capture intake form
   if (activeView === 'register') {
     return <RegisterPatient onBack={() => setActiveView('list')} onRegistrationSuccess={handleRegistrationSuccess} />;
   }
 
+  // STANDARD BASELINE: Render the master active patient directory grid map
   return (
     <div style={{ fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', marginTop: '10px' }}>
         <div>
           <h2 style={{ margin: '0 0 5px 0', color: '#1a202c' }}>Elder Resident Directory</h2>
-          <p style={{ margin: 0, color: '#718096', fontSize: '14px' }}>Select an active resident to map physiological parameters or log admission details.</p>
+          <p style={{ margin: 0, color: '#718096', fontSize: '14px' }}>
+            Select an active resident below to initialize real-time feature metric predictions.
+          </p>
         </div>
-        <button onClick={() => setActiveView('register')} style={{ padding: '10px 16px', background: '#38a169', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+        <button onClick={() => setActiveView('register')} style={{ padding: '12px 20px', background: '#38a169', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}>
           ➕ Admit New Resident
         </button>
       </div>
 
+      <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', marginBottom: '25px' }} />
+
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '40px', color: '#718096' }}>Syncing with master records ledger...</div>
+        <div style={{ textAlign: 'center', padding: '40px', color: '#718096', fontSize: '15px' }}>
+          🔄 Synchronizing with master records ledger tier...
+        </div>
       ) : patientRegistry.length === 0 ? (
-        <div style={{ border: '2px dashed #cbd5e0', padding: '40px', borderRadius: '8px', textAlign: 'center', color: '#a0aec0' }}>
-          No records found in database tables. Click 'Admit New Resident' to seed system entries.
+        <div style={{ border: '2px dashed #cbd5e0', padding: '50px 20px', borderRadius: '12px', textAlign: 'center', color: '#a0aec0', background: '#fff' }}>
+          <p style={{ fontSize: '18px', margin: '0 0 10px 0', fontWeight: 'bold' }}>No Active Residents Tracked</p>
+          <p style={{ fontSize: '14px', margin: '0 0 20px 0' }}>The database is currently empty. Please initialize your first admission.</p>
+          <button onClick={() => setActiveView('register')} style={{ padding: '10px 16px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+            Open Intake Admission Form
+          </button>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
           {patientRegistry.map((patient) => (
-            <div key={patient.patientId} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div key={patient.patientId} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'transform 0.2s' }}>
               <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '12px', background: '#edf2f7', padding: '3px 8px', borderRadius: '4px', color: '#4a5568', fontWeight: 'bold' }}>{patient.patientId}</span>
-                  <span style={{ fontSize: '13px', color: '#718096' }}>Age: {patient.age}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '12px', background: '#edf2f7', padding: '4px 10px', borderRadius: '4px', color: '#4a5568', fontWeight: 'bold', fontFamily: 'monospace' }}>
+                    {patient.patientId}
+                  </span>
+                  <span style={{ fontSize: '13px', color: '#718096', fontWeight: 'bold' }}>Age: {patient.age}</span>
                 </div>
-                <h3 style={{ margin: '0 0 5px 0', color: '#2d3748', fontSize: '18px' }}>{patient.name}</h3>
+                <h3 style={{ margin: '0 0 6px 0', color: '#2d3748', fontSize: '18px' }}>{patient.name}</h3>
                 <p style={{ margin: '0 0 15px 0', color: '#a0aec0', fontSize: '13px' }}>📍 Location: {patient.roomLocation}</p>
+                
                 {patient.medicalCondition && (
-                  <p style={{ margin: '0 0 20px 0', fontSize: '12px', color: '#718096', background: '#f7fafc', padding: '8px', borderRadius: '4px', borderLeft: '3px solid #cbd5e0' }}>📝 {patient.medicalCondition}</p>
+                  <div style={{ margin: '0 0 20px 0', fontSize: '12px', color: '#4a5568', background: '#f7fafc', padding: '10px', borderRadius: '6px', borderLeft: '4px solid #3182ce', lineHeight: '1.4' }}>
+                    <strong>Condition Note:</strong> {patient.medicalCondition}
+                  </div>
                 )}
               </div>
               
-              <button onClick={() => triggerScreeningWorkflow(patient)} style={{ width: '100%', padding: '10px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+              <button onClick={() => triggerScreeningWorkflow(patient)} style={{ width: '100%', padding: '12px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}>
                 Run Active Screening
               </button>
             </div>

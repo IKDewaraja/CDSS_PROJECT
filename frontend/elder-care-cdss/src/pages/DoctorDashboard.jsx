@@ -9,8 +9,11 @@ export default function DoctorDashboard({ user, onLogout }) {
   const [selectedPatientId, setSelectedPatientId] = useState(''); // Starts empty until loaded from DB
   
   // 3. Asynchronous Database States (Unified with Caregiver)
-  const [doctorPatientRegistry, setDoctorPatientRegistry] = useState([]); // Fetched directly from MySQL
+  const [doctorPatientRegistry, setDoctorPatientRegistry] = useState([]); // Master patient array from DB
   const [activeChartData, setActiveChartData] = useState([]);
+  const [systemAuditLogs, setSystemAuditLogs] = useState([]); // Dynamic database compliance log ledger
+  
+  // Loading Spinners States
   const [isLoadingPatients, setIsLoadingPatients] = useState(false);
   const [isLoadingChart, setIsLoadingChart] = useState(false);
 
@@ -18,13 +21,6 @@ export default function DoctorDashboard({ user, onLogout }) {
   const [bsAlertLimit, setBsAlertLimit] = useState(140);
   const [spo2AlertLimit, setSpo2AlertLimit] = useState(94);
   const [hrvAlertLimit, setHrvAlertLimit] = useState(45);
-
-  // Static Security Log Array (Immutable System Compliance Audit Trail)
-  const systemAuditLogs = [
-    { id: 'TX-9021', timestamp: '2026-07-02 10:14:22', operator: 'caregiver_amal', action: 'Submitted screening metrics payload', patientId: 'PT-091', result: 'Class 2: Definite Fall Event Detected' },
-    { id: 'TX-9018', timestamp: '2026-07-02 08:30:11', operator: 'caregiver_amal', action: 'Submitted screening metrics payload', patientId: 'PT-142', result: 'Class 1: Imminent Stumble Risk logged' },
-    { id: 'TX-8975', timestamp: '2026-07-01 16:45:00', operator: 'nurse_priyanthi', action: 'Created new profile instantiation', patientId: 'PT-033', result: 'Success - Database row synchronized' }
-  ];
 
   // HOOK 1: Fetch the master patient list from MySQL database right when Doctor dashboard mounts
   useEffect(() => {
@@ -51,7 +47,7 @@ export default function DoctorDashboard({ user, onLogout }) {
     fetchMasterPatientRegistry();
   }, []);
 
-  // HOOK 2: Fetch specific historical data when selectedPatientId or activeTab changes
+  // HOOK 2: Fetch specific historical telemetry data when selectedPatientId or activeTab changes
   useEffect(() => {
     if (!selectedPatientId) return;
 
@@ -82,6 +78,24 @@ export default function DoctorDashboard({ user, onLogout }) {
       fetchPatientHistoryFromDatabase();
     }
   }, [selectedPatientId, activeTab]);
+
+  // HOOK 3: Fetch Live Compliance Logs directly from MySQL when the doctor switches tabs
+  useEffect(() => {
+    const fetchLiveSystemAudits = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/screening/audit-trail');
+        if (!response.ok) throw new Error('Could not synchronize system records.');
+        const data = await response.json();
+        setSystemAuditLogs(data);
+      } catch (error) {
+        console.error('Audit sync error:', error);
+      }
+    };
+
+    if (activeTab === 'audit') {
+      fetchLiveSystemAudits();
+    }
+  }, [activeTab]);
 
   // Find active patient details from our live state registry array
   const activePatient = doctorPatientRegistry.find(p => p.patientId === selectedPatientId);
@@ -265,18 +279,28 @@ export default function DoctorDashboard({ user, onLogout }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {systemAuditLogs.map((log) => (
-                    <tr key={log.id} style={{ borderBottom: '1px solid #edf2f7', color: '#2d3748' }}>
-                      <td style={{ padding: '15px', fontFamily: 'monospace', fontWeight: 'bold', color: '#718096' }}>{log.id}</td>
-                      <td style={{ padding: '15px', whiteSpace: 'nowrap', fontSize: '13px', color: '#718096' }}>{log.timestamp}</td>
-                      <td style={{ padding: '15px', color: '#2b6cb0', fontWeight: 'bold' }}>{log.operator}</td>
-                      <td style={{ padding: '15px' }}>{log.action}</td>
-                      <td style={{ padding: '15px', fontWeight: 'bold' }}>{log.patientId}</td>
-                      <td style={{ padding: '15px', fontSize: '13px', fontWeight: 'bold', color: log.result.includes('Class 2') ? '#e53e3e' : log.result.includes('Class 1') ? '#dd6b20' : '#38a169' }}>
-                        {log.result}
+                  {systemAuditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: '#a0aec0', fontStyle: 'italic' }}>
+                        No transactional entries logged in database.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    systemAuditLogs.map((log) => (
+                      <tr key={log.id} style={{ borderBottom: '1px solid #edf2f7', color: '#2d3748' }}>
+                        <td style={{ padding: '15px', fontFamily: 'monospace', fontWeight: 'bold', color: '#718096' }}>{log.transactionId}</td>
+                        <td style={{ padding: '15px', whiteSpace: 'nowrap', fontSize: '13px', color: '#718096' }}>
+                          {new Date(log.timestamp).toLocaleString()}
+                        </td>
+                        <td style={{ padding: '15px', color: '#2b6cb0', fontWeight: 'bold' }}>{log.operator}</td>
+                        <td style={{ padding: '15px' }}>{log.action}</td>
+                        <td style={{ padding: '15px', fontWeight: 'bold' }}>{log.targetContext}</td>
+                        <td style={{ padding: '15px', fontSize: '13px', fontWeight: 'bold', color: log.inferenceStatus.includes('Class 2') ? '#e53e3e' : log.inferenceStatus.includes('Class 1') ? '#dd6b20' : '#38a169' }}>
+                          {log.inferenceStatus}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

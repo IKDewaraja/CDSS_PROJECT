@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function ScreeningForm({ onBack }) {
+export default function ScreeningForm({ patient, user, onBack }) {
   // 1. Form Inputs State Tracking
   const [bloodSugar, setBloodSugar] = useState('');
   const [spo2, setSpo2] = useState('');
@@ -9,7 +9,7 @@ export default function ScreeningForm({ onBack }) {
   // 2. Machine Learning Inference Output State
   const [mlPrediction, setMlPrediction] = useState(null);
 
- // 3. Live Production Machine Learning API Integration
+  // 3. Live Production Machine Learning API Integration
   const runMachineLearningInference = async (e) => {
     e.preventDefault();
 
@@ -22,12 +22,13 @@ export default function ScreeningForm({ onBack }) {
       return;
     }
 
-    // Prepare the standardized JSON payload schema expected by your Spring Boot REST controller
+    // Standardized JSON payload schema expected by your Spring Boot REST controller
     const payload = {
-      patientId: "PT-091", // This can be dynamically passed down from your patient registry selection
+      patientId: patient ? patient.patientId : "PT-091", // Dynamically uses selected patient ID
       bloodSugar: bs,
       spo2: ox,
-      hrv: hr
+      hrv: hr,
+      activeOperator: user ? user.username : "Unknown Operator" // Securely passes active user session credentials
     };
 
     try {
@@ -43,25 +44,22 @@ export default function ScreeningForm({ onBack }) {
         throw new Error(`Server returned status code: ${response.status}`);
       }
 
-      // The Java backend returns the saved entity database row containing the real ML prediction class
       const data = await response.json();
       
-      // Parse the classification integer codes output by the cStick model matrix
       let statusText = 'Class 0: Normal Ambulatory Activity';
-      let color = '#38a169'; // Green
+      let color = '#38a169'; 
       let carePlan = 'Patient displays highly stable physiological feature vectors. Maintain standard ward monitoring protocols.';
 
       if (data.predictedClass === 2) {
         statusText = 'Class 2: Definite Fall Event Detected';
-        color = '#e53e3e'; // Red
+        color = '#e53e3e'; 
         carePlan = 'CRITICAL ALERT: Biometric drops indicate immediate loss of posture stability or active syncope collapse. Dispatch on-duty nurse immediately to room location.';
       } else if (data.predictedClass === 1) {
         statusText = 'Class 1: Imminent Stumble / Slip Risk';
-        color = '#dd6b20'; // Orange
+        color = '#dd6b20'; 
         carePlan = 'WARNING: High probability of acute balance failure. Patient feature trends match historic gait destabilization matrix. Enforce mandatory unassisted movement restrictions.';
       }
 
-      // Update the React UI state with the real server response data properties
       setMlPrediction({
         modelClass: data.predictedClass,
         statusText: statusText,
@@ -84,7 +82,9 @@ export default function ScreeningForm({ onBack }) {
       </button>
 
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '30px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-        <h2 style={{ margin: '0 0 10px 0', color: '#2d3748' }}>Machine Learning Predictor Dashboard</h2>
+        <h2 style={{ margin: '0 0 10px 0', color: '#2d3748' }}>
+          Machine Learning Predictor: Tracking {patient ? patient.name : 'Resident'}
+        </h2>
         <p style={{ margin: '0 0 30px 0', color: '#718096', fontSize: '14px' }}>
           Input verified clinical measurements below. The vectors will be processed by the pre-trained classification model vector matrix.
         </p>
@@ -130,7 +130,7 @@ export default function ScreeningForm({ onBack }) {
               <div style={{ background: '#fff', border: `2px solid ${mlPrediction.color}`, borderRadius: '8px', padding: '25px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                   <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#718096' }}>MODEL INFERENCE OUTPUT</span>
-                  <span style={{ fontSize: '11px', color: '#a0aec0' }}>Latency: 12ms</span>
+                  <span style={{ fontSize: '11px', color: '#a0aec0' }}>Active Operator: {user ? user.username : 'System'}</span>
                 </div>
                 
                 <h3 style={{ margin: '0 0 5px 0', color: mlPrediction.color, fontSize: '22px' }}>
