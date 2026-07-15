@@ -16,6 +16,7 @@ export default function DoctorDashboard({ user, onLogout }) {
   // Loading Spinners States
   const [isLoadingPatients, setIsLoadingPatients] = useState(false);
   const [isLoadingChart, setIsLoadingChart] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   // 4. Dynamic Threshold State Configurations (Machine Learning Feature Boundaries)
   const [bsAlertLimit, setBsAlertLimit] = useState(140);
@@ -99,6 +100,40 @@ export default function DoctorDashboard({ user, onLogout }) {
     alert(`Model Boundary Parameters Updated Locally!\n\nNew Hyperparameter Conditions Configured:\n• Blood Sugar Cutoff: ${bsAlertLimit} mg/dL\n• SpO₂ Critical Baseline: ${spo2AlertLimit}%\n• HRV Stress Margin: ${hrvAlertLimit} ms`);
   };
 
+  // 5. PDF Generation Trigger Handler
+  const handleExportPDF = async () => {
+    if (!activePatient) return;
+    setIsExportingPdf(true);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/screening/export-pdf/${activePatient.patientId}?patientName=${encodeURIComponent(activePatient.name)}`,
+        { method: 'GET' }
+      );
+
+      if (!response.ok) throw new Error('Failed to download PDF report stream.');
+
+      // Convert incoming stream chunk directly to blob file object
+      const blob = await response.blob();
+      const localDownloadUrl = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element to trigger automatic browser saving
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.href = localDownloadUrl;
+      downloadAnchor.download = `Medical_Report_${activePatient.name.replace(/\s+/g, '_')}_${activePatient.patientId}.pdf`;
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+
+      // Clean up DOM and memory references
+      document.body.removeChild(downloadAnchor);
+      window.URL.revokeObjectURL(localDownloadUrl);
+    } catch (error) {
+      console.error('Clinical PDF generation failed:', error);
+      alert('Could not download patient document. Please verify backend service integration.');
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', background: '#f4f9ff', margin: 0 }}>
       
@@ -156,8 +191,12 @@ export default function DoctorDashboard({ user, onLogout }) {
                       Patient ID: {activePatient?.patientId} | Age: {activePatient?.age} | Ward Location: {activePatient?.roomLocation || 'N/A'}
                     </p>
                   </div>
-                  <button onClick={() => alert(`Compiling dataset profile for ${activePatient?.name}. PDF Export successful.`)} style={{ padding: '10px 18px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', boxShadow: '0 10px 24px rgba(37, 99, 235, 0.2)' }}>
-                    🖨️ Export Medical PDF Report
+                  <button 
+                    onClick={handleExportPDF} 
+                    disabled={isExportingPdf}
+                    style={{ padding: '10px 18px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', boxShadow: '0 10px 24px rgba(37, 99, 235, 0.2)', opacity: isExportingPdf ? 0.7 : 1 }}
+                  >
+                    {isExportingPdf ? '⏳ Exporting...' : '🖨️ Export Medical PDF Report'}
                   </button>
                 </div>
 

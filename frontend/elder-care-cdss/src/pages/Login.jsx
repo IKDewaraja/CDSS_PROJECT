@@ -46,7 +46,7 @@ export default function Login({ onLoginSuccess }) {
               <ShieldCheck size={24} />
             </div>
             <h1 style={{ fontSize: '28px', margin: '0 0 10px', fontWeight: 700 }}>Elder_Shield</h1>
-            <p style={{ margin: '0 0 20px', fontSize: '15px', lineHeight: 1.6, opacity: 0.95 }}>Secure access for caregivers, doctors, and administrators managing elderly care insights.</p>
+            <p style={{ margin: '0 0 20px', fontSize: '15px', lineHeight: 1.6, opacity: 0.95 }}>Secure access for caregivers and  doctors managing elderly care insights.</p>
             <div style={{ display: 'grid', gap: '12px' }}>
               {['Fall-risk monitoring', 'Clinical decision support', 'Downloadable medical reports'].map((item) => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.12)', padding: '10px 12px', borderRadius: '12px', fontSize: '14px' }}>

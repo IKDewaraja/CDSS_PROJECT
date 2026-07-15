@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
 
 export default function AdminDashboard({ user, onLogout }) {
   const [usersList, setUsersList] = useState([]);
@@ -128,8 +129,22 @@ export default function AdminDashboard({ user, onLogout }) {
                         <span style={{ background: u.role === 'Admin' ? '#e2e8f0' : u.role === 'Doctor' ? '#ebf8ff' : '#e6fffa', padding: '3px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>{u.role}</span>
                       </td>
                       <td style={{ padding: '12px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        <button onClick={() => handleEditToggle(u)} style={{ background: '#3498db', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Modify</button>
-                        <button onClick={() => handleDeleteUser(u.id)} style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Revoke</button>
+                        <button
+                          onClick={() => handleEditToggle(u)}
+                          aria-label={`Edit ${u.fullName}`}
+                          title="Edit user"
+                          style={{ background: '#3498db', color: '#fff', border: 'none', width: '34px', height: '34px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(u.id)}
+                          aria-label={`Revoke ${u.fullName}`}
+                          title="Revoke user"
+                          style={{ background: '#e74c3c', color: '#fff', border: 'none', width: '34px', height: '34px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}

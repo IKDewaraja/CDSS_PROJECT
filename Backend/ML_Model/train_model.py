@@ -4,7 +4,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import joblib
 
-print("🚀 Step 1: Reading cStick.csv Dataset...")
+print(" Step 1: Reading cStick.csv Dataset")
 df = pd.read_csv('cStick.csv')
 
 # Strip trailing spaces from all column names in the CSV header
@@ -16,7 +16,7 @@ print(list(df.columns))
 # Verify if 'Decision' or 'decision' or similar is present
 target_column = 'Decision' if 'Decision' in df.columns else 'decision'
 
-print("\n📋 Sample Data Loaded:")
+print("\n Sample Data Loaded:")
 print(df[['HRV', 'Sugar level', 'SpO2', target_column]].head(3))
 
 # Step 2: Extract target features and risk decision label
@@ -25,7 +25,7 @@ feature_columns = ['HRV', 'Sugar level', 'SpO2']
 X = df[feature_columns]
 y = df[target_column]
 
-print("\n✂️ Step 2: Splitting Data (80% Training, 20% Testing)...")
+print("\n Step 2: Splitting Data (80% Training, 20% Testing)...")
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 print("\n🧠 Step 3: Training Random Forest Model on HRV, Sugar level, and SpO2...")
@@ -43,6 +43,6 @@ print(classification_report(y_test, y_pred))
 print("\n--- Confusion Matrix ---")
 print(confusion_matrix(y_test, y_pred))
 
-print("\n💾 Step 5: Exporting Trained Model...")
+print("\n Step 5: Exporting Trained Model...")
 joblib.dump(model, 'fall_risk_model.joblib')
 print("🎉 SUCCESS! Trained classifier saved as 'fall_risk_model.joblib'")
