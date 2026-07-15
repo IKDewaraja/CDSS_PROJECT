@@ -105,7 +105,7 @@ export default function AdminDashboard({ user, onLogout }) {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '30px' }}>
           {/* Registered Users Data Table */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+          <div style={{ background: '#ffffff1a', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
             <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#2c3e50' }}>Active Employee Accounts</h3>
             {isLoading ? (
               <div>Loading secure registries...</div>
