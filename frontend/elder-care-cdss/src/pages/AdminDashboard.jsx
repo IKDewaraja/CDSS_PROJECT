@@ -101,8 +101,8 @@ export default function AdminDashboard({ user, onLogout }) {
 
       {/* Main Admin Workspace Area */}
       <main style={{ flex: 1, padding: '40px', boxSizing: 'border-box' }}>
-        <h2 style={{ margin: '0 0 5px 0', color: '#0f172a' }}>System Identity Governance Suite</h2>
-        <p style={{ margin: '0 0 30px 0', color: '#64748b', fontSize: '14px' }}>Execute secure CRUD parameters to provision structural access roles.</p>
+        <h2 style={{ margin: '0 0 5px 0', color: '#0f172a' }}>Control User Access</h2>
+        {/* <p style={{ margin: '0 0 30px 0', color: '#64748b', fontSize: '14px' }}>Execute secure CRUD parameters to provision structural access roles.</p> */}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '30px' }}>
           {/* Registered Users Data Table */}

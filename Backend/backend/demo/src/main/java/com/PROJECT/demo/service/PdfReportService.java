@@ -64,8 +64,8 @@ public class PdfReportService {
 
             // Label Formatting based on Predicted Machine Learning Class
             String classification = "Class 0: Normal";
-            if (log.getPredictedClass() == 2) classification = "Class 2: Fall Detected";
-            else if (log.getPredictedClass() == 1) classification = "Class 1: Stumble Risk";
+            if (log.getPredictedClass() == 2) classification = "Class 2: High Fall Risk Level";
+            else if (log.getPredictedClass() == 1) classification = "Class 1: Medium Fall Risk Level";
 
             table.addCell(new PdfPCell(new Phrase(classification, tableBodyFont)));
         }

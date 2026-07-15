@@ -65,11 +65,11 @@ public class MlPredictorService {
 
         String inferenceStatus;
         if (predictedClass == 2) {
-            inferenceStatus = "Class 2: Definite Fall Event Detected";
+            inferenceStatus = "Class 2: High Risk Detected";
         } else if (predictedClass == 1) {
-            inferenceStatus = "Class 1: Imminent Stumble Risk Logged";
+            inferenceStatus = "Class 1: Medium";
         } else {
-            inferenceStatus = "Class 0: Normal Baseline";
+            inferenceStatus = "Class 0: Normal";
         }
 
         // Save entry into MySQL

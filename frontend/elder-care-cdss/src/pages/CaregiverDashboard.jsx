@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import ScreeningForm from './ScreeningForm';
 import RegisterPatient from './RegisterPatient';
 
@@ -32,6 +33,23 @@ export default function CaregiverDashboard({ user }) {
   const triggerScreeningWorkflow = (patient) => {
     setSelectedPatient(patient);
     setActiveView('screening'); // Shifts into input entry panel for chosen elder
+  };
+
+  const handleDeletePatient = async (patient) => {
+    const patientIdentifier = patient.patientId || patient.id;
+    if (!window.confirm(`Remove ${patient.name} from the resident directory?`)) return;
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/patients/delete/${encodeURIComponent(patientIdentifier)}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Patient removal failed.');
+      fetchActivePatients();
+    } catch (error) {
+      console.error('Error deleting patient:', error);
+      alert(error.message);
+    }
   };
 
   const handleRegistrationSuccess = () => {
@@ -94,7 +112,18 @@ export default function CaregiverDashboard({ user }) {
                   <span style={{ fontSize: '12px', background: '#edf2f7', padding: '4px 10px', borderRadius: '4px', color: '#4a5568', fontWeight: 'bold', fontFamily: 'monospace' }}>
                     {patient.patientId}
                   </span>
-                  <span style={{ fontSize: '13px', color: '#718096', fontWeight: 'bold' }}>Age: {patient.age}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeletePatient(patient);
+                    }}
+                    aria-label={`Delete ${patient.name}`}
+                    title="Delete patient"
+                    style={{ background: '#e74c3c', color: '#fff', border: 'none', width: '32px', height: '32px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 </div>
                 <h3 style={{ margin: '0 0 6px 0', color: '#2d3748', fontSize: '18px' }}>{patient.name}</h3>
                 <p style={{ margin: '0 0 15px 0', color: '#a0aec0', fontSize: '13px' }}>📍 Location: {patient.roomLocation}</p>

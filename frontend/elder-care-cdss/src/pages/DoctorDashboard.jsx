@@ -3,25 +3,20 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 export default function DoctorDashboard({ user, onLogout }) {
   // 1. Navigation State Tracking for the Sub-Views
-  const [activeTab, setActiveTab] = useState('trends'); // 'trends', 'thresholds', 'audit'
+  const [activeTab, setActiveTab] = useState('trends'); // 'trends', 'audit'
   
-  // 2. Selected Patient State (Starts null so we show the card directory roster grid first)
+  // 2. Selected Patient State
   const [selectedPatientId, setSelectedPatientId] = useState(null); 
   
   // 3. Asynchronous Database States
-  const [doctorPatientRegistry, setDoctorPatientRegistry] = useState([]); // Master patient array from DB
+  const [doctorPatientRegistry, setDoctorPatientRegistry] = useState([]); 
   const [activeChartData, setActiveChartData] = useState([]);
-  const [systemAuditLogs, setSystemAuditLogs] = useState([]); // Dynamic database compliance log ledger
+  const [systemAuditLogs, setSystemAuditLogs] = useState([]); 
   
   // Loading Spinners States
   const [isLoadingPatients, setIsLoadingPatients] = useState(false);
   const [isLoadingChart, setIsLoadingChart] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
-
-  // 4. Dynamic Threshold State Configurations (Machine Learning Feature Boundaries)
-  const [bsAlertLimit, setBsAlertLimit] = useState(140);
-  const [spo2AlertLimit, setSpo2AlertLimit] = useState(94);
-  const [hrvAlertLimit, setHrvAlertLimit] = useState(45);
 
   // HOOK 1: Fetch the master patient list from MySQL database right when Doctor dashboard mounts
   useEffect(() => {
@@ -53,13 +48,12 @@ export default function DoctorDashboard({ user, onLogout }) {
         if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
         const databaseRows = await response.json();
         
-        // Format the database timestamp and model fields to match keys expected by Recharts
         const formattedChartData = databaseRows.map(item => ({
           day: new Date(item.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
           bloodSugar: item.bloodSugar,
           spo2: item.spo2,
           hrv: item.hrv
-        })).reverse(); // Reverse order so chronological charts move from Left to Right
+        })).reverse(); 
 
         setActiveChartData(formattedChartData);
       } catch (error) {
@@ -95,12 +89,7 @@ export default function DoctorDashboard({ user, onLogout }) {
   // Find active patient details from our live state registry array
   const activePatient = doctorPatientRegistry.find(p => p.patientId === selectedPatientId);
 
-  const handleSaveThresholds = (e) => {
-    e.preventDefault();
-    alert(`Model Boundary Parameters Updated Locally!\n\nNew Hyperparameter Conditions Configured:\n• Blood Sugar Cutoff: ${bsAlertLimit} mg/dL\n• SpO₂ Critical Baseline: ${spo2AlertLimit}%\n• HRV Stress Margin: ${hrvAlertLimit} ms`);
-  };
-
-  // 5. PDF Generation Trigger Handler
+  // PDF Generation Trigger Handler
   const handleExportPDF = async () => {
     if (!activePatient) return;
     setIsExportingPdf(true);
@@ -112,18 +101,15 @@ export default function DoctorDashboard({ user, onLogout }) {
 
       if (!response.ok) throw new Error('Failed to download PDF report stream.');
 
-      // Convert incoming stream chunk directly to blob file object
       const blob = await response.blob();
       const localDownloadUrl = window.URL.createObjectURL(blob);
 
-      // Create a temporary link element to trigger automatic browser saving
       const downloadAnchor = document.createElement('a');
       downloadAnchor.href = localDownloadUrl;
       downloadAnchor.download = `Medical_Report_${activePatient.name.replace(/\s+/g, '_')}_${activePatient.patientId}.pdf`;
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
 
-      // Clean up DOM and memory references
       document.body.removeChild(downloadAnchor);
       window.URL.revokeObjectURL(localDownloadUrl);
     } catch (error) {
@@ -147,12 +133,6 @@ export default function DoctorDashboard({ user, onLogout }) {
               style={{ padding: '12px', background: activeTab === 'trends' ? 'rgba(255,255,255,0.18)' : 'transparent', color: activeTab === 'trends' ? '#fff' : '#e0f2fe', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
             >
               📈 Clinical Roster
-            </div>
-            <div 
-              onClick={() => { setActiveTab('thresholds'); setSelectedPatientId(null); }}
-              style={{ padding: '12px', background: activeTab === 'thresholds' ? 'rgba(255,255,255,0.18)' : 'transparent', color: activeTab === 'thresholds' ? '#fff' : '#e0f2fe', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              ⚙️ Model Tuning Limits
             </div>
             <div 
               onClick={() => { setActiveTab('audit'); setSelectedPatientId(null); }}
@@ -188,7 +168,7 @@ export default function DoctorDashboard({ user, onLogout }) {
                   <div>
                     <h2 style={{ margin: '0 0 5px 0', color: '#1a202c' }}>Clinical Analytics Profile: {activePatient ? activePatient.name : 'Resident'}</h2>
                     <p style={{ margin: 0, color: '#718096', fontSize: '14px' }}>
-                      Patient ID: {activePatient?.patientId} | Age: {activePatient?.age} | Ward Location: {activePatient?.roomLocation || 'N/A'}
+                      Patient ID: {activePatient?.patientId} | Age: {activePatient?.age} | Room Location: {activePatient?.roomLocation || 'N/A'}
                     </p>
                   </div>
                   <button 
@@ -200,7 +180,7 @@ export default function DoctorDashboard({ user, onLogout }) {
                   </button>
                 </div>
 
-                {/* Chart Visualization Box occupying full workspace layout width */}
+                {/* Chart Visualization Box */}
                 <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: '12px', padding: '25px', minHeight: '430px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)' }}>
                   <div>
                     <h3 style={{ margin: '0 0 5px 0', color: '#2d3748' }}>
@@ -226,9 +206,10 @@ export default function DoctorDashboard({ user, onLogout }) {
                           <YAxis stroke="#718096" style={{ fontSize: '11px' }} />
                           <Tooltip />
                           <Legend wrapperStyle={{ fontSize: '12px' }} />
-                          <Line type="monotone" dataKey="bloodSugar" name={`Blood Sugar (Limit: >${bsAlertLimit})`} stroke="#3182ce" strokeWidth={3} activeDot={{ r: 8 }} />
-                          <Line type="monotone" dataKey="spo2" name={`SpO₂ % (Warning: <${spo2AlertLimit})`} stroke="#38a169" strokeWidth={3} />
-                          <Line type="monotone" dataKey="hrv" name={`HRV ms (Cutoff: <${hrvAlertLimit})`} stroke="#805ad5" strokeWidth={3} />
+                          {/* Limit texts completely removed from line names */}
+                          <Line type="monotone" dataKey="bloodSugar" name="Blood Sugar" stroke="#3182ce" strokeWidth={3} activeDot={{ r: 8 }} />
+                          <Line type="monotone" dataKey="spo2" name="SpO₂ %" stroke="#38a169" strokeWidth={3} />
+                          <Line type="monotone" dataKey="hrv" name="HRV ms" stroke="#805ad5" strokeWidth={3} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -238,7 +219,7 @@ export default function DoctorDashboard({ user, onLogout }) {
                     <h5 style={{ margin: '0 0 5px 0', color: '#4a5568', fontSize: '13px' }}>Feature Classification Insight:</h5>
                     <p style={{ margin: 0, fontSize: '13px', color: '#4a5568', lineHeight: '1.4' }}>
                       {activeChartData.length > 0 
-                        ? 'Telemetry pipelines are synchronized. Outlier points crossing active alert boundaries will automatically register risk classification shifts inside the system ledger.' 
+                        ? 'Telemetry pipelines are synchronized. Outlier points will automatically register risk classification shifts inside the system ledger.' 
                         : 'Awaiting database logging execution. The telemetry graph will plot points automatically as caregivers push feature payloads.'
                       }
                     </p>
@@ -284,38 +265,7 @@ export default function DoctorDashboard({ user, onLogout }) {
           </div>
         )}
 
-        {/* SUB-VIEW 2: MACHINE LEARNING FEATURE WEIGHT CONFIGURATION */}
-        {activeTab === 'thresholds' && (
-          <div style={{ maxWidth: '700px' }}>
-            <h2 style={{ margin: '0 0 5px 0', color: '#1a202c' }}>Model Classification Limits</h2>
-            <p style={{ margin: '0 0 30px 0', color: '#718096', fontSize: '14px' }}>
-              Modify the global boundary markers below to tune runtime decision boundaries for feature vectors.
-            </p>
-
-            <form onSubmit={handleSaveThresholds} style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #dbe4f0', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)' }}>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px', color: '#4a5568' }}>Post-Prandial Blood Sugar Upper Limit (mg/dL)</label>
-                <input type="number" value={bsAlertLimit} onChange={(e) => setBsAlertLimit(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e0', boxSizing: 'border-box' }} />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px', color: '#4a5568' }}>Critical Hypoxia Target Floor (SpO₂ %)</label>
-                <input type="number" value={spo2AlertLimit} onChange={(e) => setSpo2AlertLimit(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e0', boxSizing: 'border-box' }} />
-              </div>
-
-              <div style={{ marginBottom: '30px' }}>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px', color: '#4a5568' }}>Heart Rate Variability Stress Cutoff (ms)</label>
-                <input type="number" value={hrvAlertLimit} onChange={(e) => setHrvAlertLimit(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e0', boxSizing: 'border-box' }} />
-              </div>
-
-              <button type="submit" style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '15px', boxShadow: '0 10px 24px rgba(37, 99, 235, 0.2)' }}>
-                Commit Dynamic Configuration Parameters
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* SUB-VIEW 3: SYSTEM SECURITY COMPLIANCE AUDIT TRAIL */}
+        {/* SUB-VIEW 2: SYSTEM SECURITY COMPLIANCE AUDIT TRAIL */}
         {activeTab === 'audit' && (
           <div>
             <h2 style={{ margin: '0 0 5px 0', color: '#1a202c' }}>System Compliance Audit Trail</h2>

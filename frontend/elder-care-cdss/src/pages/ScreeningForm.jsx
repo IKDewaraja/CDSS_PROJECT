@@ -46,18 +46,18 @@ export default function ScreeningForm({ patient, user, onBack }) {
 
       const data = await response.json();
       
-      let statusText = 'Class 0: Normal Ambulatory Activity';
+      let statusText = 'Class 0: Normal Physiological Range Detected';
       let color = '#38a169'; 
-      let carePlan = 'Patient displays highly stable physiological feature vectors. Maintain standard ward monitoring protocols.';
+      let carePlan = 'Patient displays stable physiological feature vectors. Maintain standard ward monitoring protocols.';
 
       if (data.predictedClass === 2) {
-        statusText = 'Class 2: Definite Fall Event Detected';
+        statusText = 'Class 2: High-Risk Fall Detected';
         color = '#e53e3e'; 
-        carePlan = 'CRITICAL ALERT: Biometric drops indicate immediate loss of posture stability or active syncope collapse. Dispatch on-duty nurse immediately to room location.';
+        carePlan = 'CRITICAL ALERT: High probability of acute balance failure.';
       } else if (data.predictedClass === 1) {
-        statusText = 'Class 1: Imminent Stumble / Slip Risk';
+        statusText = 'Class 1: Medium-Risk  Fall Detected';
         color = '#dd6b20'; 
-        carePlan = 'WARNING: High probability of acute balance failure. Patient feature trends match historic gait destabilization matrix. Enforce mandatory unassisted movement restrictions.';
+        carePlan = 'WARNING: Enforce mandatory unassisted movement restrictions.';
       }
 
       setMlPrediction({
@@ -86,7 +86,7 @@ export default function ScreeningForm({ patient, user, onBack }) {
           Machine Learning Predictor: Tracking {patient ? patient.name : 'Resident'}
         </h2>
         <p style={{ margin: '0 0 30px 0', color: '#718096', fontSize: '14px' }}>
-          Input verified clinical measurements below. The vectors will be processed by the pre-trained classification model vector matrix.
+          Input verified clinical measurements below.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
@@ -115,7 +115,7 @@ export default function ScreeningForm({ patient, user, onBack }) {
             </div>
 
             <button type="submit" style={{ width: '100%', padding: '12px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer' }}>
-              Query Trained Model API
+              Check Fall-Risk Level
             </button>
           </form>
 
@@ -123,8 +123,8 @@ export default function ScreeningForm({ patient, user, onBack }) {
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             {!mlPrediction ? (
               <div style={{ background: '#f7fafc', border: '2px dashed #cbd5e0', borderRadius: '8px', padding: '40px', textAlign: 'center', color: '#a0aec0' }}>
-                <p style={{ fontSize: '18px', margin: 0 }}>Awaiting Model Matrix Stream</p>
-                <p style={{ fontSize: '12px', marginTop: '5px' }}>Submit feature vectors to execute classification analysis.</p>
+                <p style={{ fontSize: '18px', margin: 0 }}>Awaiting Risk Level Assessment</p>
+                <p style={{ fontSize: '12px', marginTop: '5px' }}>Submit feature vectors to execute risk level prediction.</p>
               </div>
             ) : (
               <div style={{ background: '#fff', border: `2px solid ${mlPrediction.color}`, borderRadius: '8px', padding: '25px' }}>
@@ -136,10 +136,10 @@ export default function ScreeningForm({ patient, user, onBack }) {
                 <h3 style={{ margin: '0 0 5px 0', color: mlPrediction.color, fontSize: '22px' }}>
                   {mlPrediction.statusText}
                 </h3>
-                <div style={{ fontSize: '13px', color: '#4a5568', marginBottom: '15px' }}>
+                {/* <div style={{ fontSize: '13px', color: '#4a5568', marginBottom: '15px' }}>
                   Model Confidence Score: <strong>{mlPrediction.probability}</strong>
                 </div>
-                
+                 */}
                 <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '15px 0' }} />
                 
                 <h4 style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#718096' }}>Prescriptive Interventions:</h4>
