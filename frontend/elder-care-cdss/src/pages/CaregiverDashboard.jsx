@@ -58,15 +58,15 @@ export default function CaregiverDashboard({ user }) {
 
   // STANDARD BASELINE: Render the master active patient directory grid map
   return (
-    <div style={{ fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', marginTop: '10px' }}>
+    <div style={{ fontFamily: 'sans-serif', background: '#f4f9ff', padding: '8px 0 20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', marginTop: '10px', padding: '20px 24px', background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(15, 118, 110, 0.08) 100%)', borderRadius: '16px', border: '1px solid #dbe4f0' }}>
         <div>
-          <h2 style={{ margin: '0 0 5px 0', color: '#1a202c' }}>Elder Resident Directory</h2>
-          <p style={{ margin: 0, color: '#718096', fontSize: '14px' }}>
+          <h2 style={{ margin: '0 0 5px 0', color: '#0f172a' }}>Elder Resident Directory</h2>
+          <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
             Select an active resident below to initialize real-time feature metric predictions.
           </p>
         </div>
-        <button onClick={() => setActiveView('register')} style={{ padding: '12px 20px', background: '#38a169', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}>
+        <button onClick={() => setActiveView('register')} style={{ padding: '12px 20px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', boxShadow: '0 10px 24px rgba(37, 99, 235, 0.2)' }}>
           ➕ Admit New Resident
         </button>
       </div>
@@ -78,17 +78,17 @@ export default function CaregiverDashboard({ user }) {
           🔄 Synchronizing with master records ledger tier...
         </div>
       ) : patientRegistry.length === 0 ? (
-        <div style={{ border: '2px dashed #cbd5e0', padding: '50px 20px', borderRadius: '12px', textAlign: 'center', color: '#a0aec0', background: '#fff' }}>
+        <div style={{ border: '2px dashed #cbd5e0', padding: '50px 20px', borderRadius: '12px', textAlign: 'center', color: '#64748b', background: '#fff', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)' }}>
           <p style={{ fontSize: '18px', margin: '0 0 10px 0', fontWeight: 'bold' }}>No Active Residents Tracked</p>
           <p style={{ fontSize: '14px', margin: '0 0 20px 0' }}>The database is currently empty. Please initialize your first admission.</p>
-          <button onClick={() => setActiveView('register')} style={{ padding: '10px 16px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+          <button onClick={() => setActiveView('register')} style={{ padding: '10px 16px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
             Open Intake Admission Form
           </button>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
           {patientRegistry.map((patient) => (
-            <div key={patient.patientId} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'transform 0.2s' }}>
+            <div key={patient.patientId} style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: '8px', padding: '20px', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', transition: 'transform 0.2s' }}>
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <span style={{ fontSize: '12px', background: '#edf2f7', padding: '4px 10px', borderRadius: '4px', color: '#4a5568', fontWeight: 'bold', fontFamily: 'monospace' }}>
@@ -106,7 +106,7 @@ export default function CaregiverDashboard({ user }) {
                 )}
               </div>
               
-              <button onClick={() => triggerScreeningWorkflow(patient)} style={{ width: '100%', padding: '12px', background: '#2b6cb0', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}>
+              <button onClick={() => triggerScreeningWorkflow(patient)} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}>
                 Run Active Screening
               </button>
             </div>

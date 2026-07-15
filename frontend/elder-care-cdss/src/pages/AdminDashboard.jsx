@@ -85,34 +85,34 @@ export default function AdminDashboard({ user, onLogout }) {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f7fafc', margin: 0 }}>
+    <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif', background: '#f4f9ff', margin: 0 }}>
       {/* Admin Sidebar */}
-      <aside style={{ width: '260px', background: '#2c3e50', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px', boxSizing: 'border-box' }}>
+      <aside style={{ width: '260px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px', boxSizing: 'border-box' }}>
         <div>
-          <h2 style={{ color: '#1abc9c', margin: '0 0 25px 0', fontSize: '20px', textAlign: 'center' }}>⚙️ Admin Control</h2>
-          <div style={{ padding: '12px', background: '#34495e', borderRadius: '6px', fontWeight: 'bold', textAlign: 'center' }}>👥 User Account Management</div>
+          <h2 style={{ color: '#e0f2fe', margin: '0 0 25px 0', fontSize: '20px', textAlign: 'center' }}>⚙️ Admin Control</h2>
+          <div style={{ padding: '12px', background: 'rgba(255,255,255,0.16)', borderRadius: '8px', fontWeight: 'bold', textAlign: 'center' }}>👥 User Account Management</div>
         </div>
         <div>
-          <div style={{ fontSize: '13px', color: '#bdc3c7', marginBottom: '10px' }}>Root Session: {user.username}</div>
+          <div style={{ fontSize: '13px', color: '#e0f2fe', marginBottom: '10px' }}>Root Session: {user.username}</div>
           <button onClick={onLogout} style={{ width: '100%', background: '#e74c3c', color: '#fff', border: 'none', padding: '10px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>Sign Out</button>
         </div>
       </aside>
 
       {/* Main Admin Workspace Area */}
       <main style={{ flex: 1, padding: '40px', boxSizing: 'border-box' }}>
-        <h2 style={{ margin: '0 0 5px 0', color: '#2c3e50' }}>System Identity Governance Suite</h2>
-        <p style={{ margin: '0 0 30px 0', color: '#7f8c8d', fontSize: '14px' }}>Execute secure CRUD parameters to provision structural access roles.</p>
+        <h2 style={{ margin: '0 0 5px 0', color: '#0f172a' }}>System Identity Governance Suite</h2>
+        <p style={{ margin: '0 0 30px 0', color: '#64748b', fontSize: '14px' }}>Execute secure CRUD parameters to provision structural access roles.</p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '30px' }}>
           {/* Registered Users Data Table */}
-          <div style={{ background: '#ffffff1a', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#2c3e50' }}>Active Employee Accounts</h3>
+          <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: '12px', padding: '20px', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)' }}>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#0f172a' }}>Active Employee Accounts</h3>
             {isLoading ? (
               <div>Loading secure registries...</div>
             ) : (
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                 <thead>
-                  <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
+                  <tr style={{ background: '#f8fbff', borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
                     <th style={{ padding: '12px' }}>Employee Name</th>
                     <th style={{ padding: '12px' }}>Username</th>
                     <th style={{ padding: '12px' }}>System Role</th>
@@ -139,8 +139,8 @@ export default function AdminDashboard({ user, onLogout }) {
           </div>
 
           {/* Create / Edit Account Side Panel Form */}
-          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '25px', height: 'fit-content' }}>
-            <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#2c3e50' }}>{editingId ? 'Modify System Target' : 'Provision New Account'}</h3>
+          <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: '12px', padding: '25px', height: 'fit-content', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)' }}>
+            <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#0f172a' }}>{editingId ? 'Modify System Target' : 'Provision New Account'}</h3>
             <form onSubmit={handleSaveUser}>
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Full Employee Name</label>
@@ -162,7 +162,7 @@ export default function AdminDashboard({ user, onLogout }) {
                   <option value="Admin">System Administrator</option>
                 </select>
               </div>
-              <button type="submit" style={{ width: '100%', padding: '10px', background: '#1abc9c', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+              <button type="submit" style={{ width: '100%', padding: '10px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 10px 24px rgba(37, 99, 235, 0.2)' }}>
                 {editingId ? 'Update Identity Settings' : 'Initialize Account Structure'}
               </button>
               {editingId && <button type="button" onClick={clearForm} style={{ width: '100%', padding: '8px', marginTop: '8px', background: '#95a5a6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Cancel Modifications</button>}
