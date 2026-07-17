@@ -47,7 +47,7 @@ public class MlPredictorService {
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestPayload, headers);
 
-            System.out.println("📡 Sending payload to Python ML microservice at " + PYTHON_ML_API_URL);
+            System.out.println("📡 Attempting to send payload to Python ML microservice at " + PYTHON_ML_API_URL);
 
             // Execute POST request to Flask
             Map response = restTemplate.postForObject(PYTHON_ML_API_URL, entity, Map.class);
@@ -59,7 +59,7 @@ public class MlPredictorService {
             }
 
         } catch (Exception e) {
-            System.err.println("❌ FAILED TO CONNECT TO PYTHON ML SERVICE:");
+            System.err.println("❌ FAILED TO CONNECT TO PYTHON ML SERVICE (Fallback values will be used):");
             e.printStackTrace();
         }
 
@@ -72,24 +72,35 @@ public class MlPredictorService {
             inferenceStatus = "Class 0: Normal";
         }
 
+        System.out.println("💾 Preparing to save screening log to database for patient: " + patientId);
+
         // Save entry into MySQL
         ScreeningLog newLog = new ScreeningLog(
                 patientId, bloodSugar, spo2, hrv, predictedClass, confidence, LocalDateTime.now()
         );
-        ScreeningLog savedLog = screeningRepository.save(newLog);
 
-        // Save Audit Trail into MySQL
-        AuditLog auditTrail = new AuditLog(
-                "TX-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
-                LocalDateTime.now(),
-                activeOperator,
-                "Submitted screening metrics payload",
-                patientId,
-                inferenceStatus
-        );
-        auditLogRepository.save(auditTrail);
+        try {
+            ScreeningLog savedLog = screeningRepository.save(newLog);
+            System.out.println("✅ SUCCESS: Saved Screening Log ID " + savedLog.getId() + " to MySQL.");
 
-        return savedLog;
+            // Save Audit Trail into MySQL
+            AuditLog auditTrail = new AuditLog(
+                    "TX-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase(),
+                    LocalDateTime.now(),
+                    activeOperator,
+                    "Submitted screening metrics payload",
+                    patientId,
+                    inferenceStatus
+            );
+            auditLogRepository.save(auditTrail);
+            System.out.println("✅ SUCCESS: Saved Audit Log to MySQL.");
+
+            return savedLog;
+        } catch (Exception sqlEx) {
+            System.err.println("❌ DATABASE ERROR: Failed to execute INSERT query on 'screening_logs' table:");
+            sqlEx.printStackTrace();
+            return null;
+        }
     }
 
     public List<ScreeningLog> getPatientTelemetryHistory(String patientId) {

@@ -57,6 +57,8 @@ export default function CaregiverDashboard({ user }) {
     setActiveView('list');  // Return securely back to the main grid view
   };
 
+  const followUpCount = patientRegistry.filter((patient) => patient.medicalCondition).length;
+
   
 // Route Routing Check 1: Render the dynamic vitals input entry panel
   if (activeView === 'screening') {
@@ -76,8 +78,8 @@ export default function CaregiverDashboard({ user }) {
 
   // STANDARD BASELINE: Render the master active patient directory grid map
   return (
-    <div style={{ fontFamily: 'sans-serif', background: '#f4f9ff', padding: '8px 0 20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px', marginTop: '10px', padding: '20px 24px', background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(15, 118, 110, 0.08) 100%)', borderRadius: '16px', border: '1px solid #dbe4f0' }}>
+    <div style={{ fontFamily: 'sans-serif', minHeight: '100vh', background: 'linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%)', padding: '16px 20px 24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', marginTop: '6px', padding: '20px 24px', background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.09) 0%, rgba(15, 118, 110, 0.08) 100%)', borderRadius: '16px', border: '1px solid #dbe4f0' }}>
         <div>
           <h2 style={{ margin: '0 0 5px 0', color: '#0f172a' }}>Elder Resident Directory</h2>
           <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
@@ -87,6 +89,21 @@ export default function CaregiverDashboard({ user }) {
         <button onClick={() => setActiveView('register')} style={{ padding: '12px 20px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', boxShadow: '0 10px 24px rgba(37, 99, 235, 0.2)' }}>
           ➕ Admit New Resident
         </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px 16px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Total Residents</div>
+          <div style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>{patientRegistry.length}</div>
+        </div>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px 16px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Needs Follow-up</div>
+          <div style={{ fontSize: '20px', fontWeight: '700', color: '#2563eb' }}>{followUpCount}</div>
+        </div>
+        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px 16px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.04)' }}>
+          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Quick Action</div>
+          <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f766e' }}>Admit or monitor resident</div>
+        </div>
       </div>
 
       <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', marginBottom: '25px' }} />
@@ -136,7 +153,7 @@ export default function CaregiverDashboard({ user }) {
               </div>
               
               <button onClick={() => triggerScreeningWorkflow(patient)} style={{ width: '100%', padding: '12px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px', transition: 'background 0.2s' }}>
-                Run Active Screening
+                Enter clinical measurements
               </button>
             </div>
           ))}

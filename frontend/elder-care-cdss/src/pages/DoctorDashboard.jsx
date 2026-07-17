@@ -88,6 +88,7 @@ export default function DoctorDashboard({ user, onLogout }) {
 
   // Find active patient details from our live state registry array
   const activePatient = doctorPatientRegistry.find(p => p.patientId === selectedPatientId);
+  const monitoredPatientCount = doctorPatientRegistry.length;
 
   // PDF Generation Trigger Handler
   const handleExportPDF = async () => {
@@ -121,7 +122,7 @@ export default function DoctorDashboard({ user, onLogout }) {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', background: '#f4f9ff', margin: 0 }}>
+    <div style={{ display: 'flex', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', background: 'linear-gradient(135deg, #f8fbff 0%, #eef6ff 100%)', margin: 0 }}>
       
       {/* 1. INTERNAL SIDEBAR FRAMEWORK */}
       <aside style={{ width: '260px', background: 'linear-gradient(135deg, #2563eb 0%, #0f766e 100%)', color: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '20px', boxSizing: 'border-box' }}>
@@ -150,6 +151,20 @@ export default function DoctorDashboard({ user, onLogout }) {
 
       {/* 2. DYNAMIC MAIN VIEWPORT RENDER MATRIX */}
       <main style={{ flex: 1, padding: '40px', boxSizing: 'border-box', overflowY: 'auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '22px' }}>
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px 16px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Monitored Residents</div>
+            <div style={{ fontSize: '20px', fontWeight: '700', color: '#0f172a' }}>{monitoredPatientCount}</div>
+          </div>
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px 16px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Current View</div>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#2563eb' }}>{activeTab === 'trends' ? 'Clinical roster' : 'Audit trail'}</div>
+          </div>
+          <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px 16px', boxShadow: '0 8px 20px rgba(15, 23, 42, 0.04)' }}>
+            <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>Selected Resident</div>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#0f766e' }}>{activePatient ? activePatient.name : 'None selected'}</div>
+          </div>
+        </div>
         
         {/* SUB-VIEW 1: LONGITUDINAL TRENDS DIAGNOSTICS */}
         {activeTab === 'trends' && (
@@ -184,9 +199,9 @@ export default function DoctorDashboard({ user, onLogout }) {
                 <div style={{ background: '#fff', border: '1px solid #dbe4f0', borderRadius: '12px', padding: '25px', minHeight: '430px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: '0 10px 24px rgba(15, 23, 42, 0.05)' }}>
                   <div>
                     <h3 style={{ margin: '0 0 5px 0', color: '#2d3748' }}>
-                      Longitudinal Vectors Telemetry Tracking Graph
+                      Longitudinal Tracking Graph
                     </h3>
-                    <span style={{ fontSize: '13px', color: '#718096' }}>Data Stream Source: Live Relational Database Records via Spring Boot API</span>
+                    {/* <span style={{ fontSize: '13px', color: '#718096' }}>Data Stream Source: Live Relational Database Records via Spring Boot API</span> */}
                   </div>
 
                   {isLoadingChart ? (
@@ -215,7 +230,7 @@ export default function DoctorDashboard({ user, onLogout }) {
                     </div>
                   )}
 
-                  <div style={{ background: '#f7fafc', borderLeft: '4px solid #3182ce', padding: '15px', borderRadius: '0 4px 4px 0', marginTop: '25px' }}>
+                  {/* <div style={{ background: '#f7fafc', borderLeft: '4px solid #3182ce', padding: '15px', borderRadius: '0 4px 4px 0', marginTop: '25px' }}>
                     <h5 style={{ margin: '0 0 5px 0', color: '#4a5568', fontSize: '13px' }}>Feature Classification Insight:</h5>
                     <p style={{ margin: 0, fontSize: '13px', color: '#4a5568', lineHeight: '1.4' }}>
                       {activeChartData.length > 0 
@@ -223,7 +238,7 @@ export default function DoctorDashboard({ user, onLogout }) {
                         : 'Awaiting database logging execution. The telemetry graph will plot points automatically as caregivers push feature payloads.'
                       }
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             ) : (
@@ -231,7 +246,7 @@ export default function DoctorDashboard({ user, onLogout }) {
               <div>
                 <div style={{ marginBottom: '30px' }}>
                   <h2 style={{ margin: '0 0 5px 0', color: '#1a202c' }}>Clinical Diagnostic Directory</h2>
-                  <p style={{ margin: 0, color: '#718096', fontSize: '14px' }}>Select an active elder resident to inspect longitudinal physiological trend metrics and predictive telemetry log graphs.</p>
+                  {/* <p style={{ margin: 0, color: '#718096', fontSize: '14px' }}>Select an active elder resident to inspect longitudinal physiological trend metrics and predictive telemetry log graphs.</p> */}
                 </div>
 
                 {isLoadingPatients ? (
